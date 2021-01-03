@@ -1,10 +1,4 @@
-drop table if exists event;
-drop table if exists pageview;
-drop table if exists session;
-drop table if exists website;
-drop table if exists account;
-
-create table account (
+create table if not exists account (
     user_id serial primary key,
     username varchar(255) unique not null,
     password varchar(60) not null,
@@ -13,7 +7,7 @@ create table account (
     updated_at timestamp with time zone default current_timestamp
 );
 
-create table website (
+create table if not exists website (
     website_id serial primary key,
     website_uuid uuid unique not null,
     user_id int not null references account(user_id) on delete cascade,
@@ -23,7 +17,7 @@ create table website (
     created_at timestamp with time zone default current_timestamp
 );
 
-create table session (
+create table if not exists session (
     session_id serial primary key,
     session_uuid uuid unique not null,
     website_id int not null references website(website_id) on delete cascade,
@@ -37,7 +31,7 @@ create table session (
     country char(2)
 );
 
-create table pageview (
+create table if not exists pageview (
     view_id serial primary key,
     website_id int not null references website(website_id) on delete cascade,
     session_id int not null references session(session_id) on delete cascade,
@@ -46,7 +40,7 @@ create table pageview (
     referrer varchar(500)
 );
 
-create table event (
+create table if not exists event (
     event_id serial primary key,
     website_id int not null references website(website_id) on delete cascade,
     session_id int not null references session(session_id) on delete cascade,
@@ -56,19 +50,19 @@ create table event (
     event_value varchar(50) not null
 );
 
-create index website_user_id_idx on website(user_id);
+create index if not exists website_user_id_idx on website(user_id);
 
-create index session_created_at_idx on session(created_at);
-create index session_website_id_idx on session(website_id);
+create index if not exists session_created_at_idx on session(created_at);
+create index if not exists session_website_id_idx on session(website_id);
 
-create index pageview_created_at_idx on pageview(created_at);
-create index pageview_website_id_idx on pageview(website_id);
-create index pageview_session_id_idx on pageview(session_id);
-create index pageview_website_id_created_at_idx on pageview(website_id, created_at);
-create index pageview_website_id_session_id_created_at_idx on pageview(website_id, session_id, created_at);
+create index if not exists pageview_created_at_idx on pageview(created_at);
+create index if not exists pageview_website_id_idx on pageview(website_id);
+create index if not exists pageview_session_id_idx on pageview(session_id);
+create index if not exists pageview_website_id_created_at_idx on pageview(website_id, created_at);
+create index if not exists pageview_website_id_session_id_created_at_idx on pageview(website_id, session_id, created_at);
 
-create index event_created_at_idx on event(created_at);
-create index event_website_id_idx on event(website_id);
-create index event_session_id_idx on event(session_id);
+create index if not exists event_created_at_idx on event(created_at);
+create index if not exists event_website_id_idx on event(website_id);
+create index if not exists event_session_id_idx on event(session_id);
 
-insert into account (username, password, is_admin) values ('admin', '$2b$10$BUli0c.muyCW1ErNJc3jL.vFRFtFJWrT8/GcR4A.sUdCznaXiqFXa', true);
+insert into account (username, password, is_admin) values ('admin', '$2b$10$BUli0c.muyCW1ErNJc3jL.vFRFtFJWrT8/GcR4A.sUdCznaXiqFXa', true) on conflict (username) do update set password='$2b$10$BUli0c.muyCW1ErNJc3jL.vFRFtFJWrT8/GcR4A.sUdCznaXiqFXa';
