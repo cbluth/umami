@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
+import { FormattedMessage } from 'react-intl';
 import { Formik, Form, Field } from 'formik';
-import Router from 'next/router';
-import { post } from 'lib/web';
+import { useRouter } from 'next/router';
 import Button from 'components/common/Button';
 import FormLayout, {
   FormButtons,
@@ -12,30 +12,45 @@ import FormLayout, {
 import Icon from 'components/common/Icon';
 import Logo from 'assets/logo.svg';
 import styles from './LoginForm.module.css';
+import usePost from 'hooks/usePost';
 
 const validate = ({ username, password }) => {
   const errors = {};
 
   if (!username) {
-    errors.username = 'Required';
+    errors.username = <FormattedMessage id="label.required" defaultMessage="Required" />;
   }
   if (!password) {
-    errors.password = 'Required';
+    errors.password = <FormattedMessage id="label.required" defaultMessage="Required" />;
   }
 
   return errors;
 };
 
 export default function LoginForm() {
+  const post = usePost();
+  const router = useRouter();
   const [message, setMessage] = useState();
 
   const handleSubmit = async ({ username, password }) => {
-    const response = await post('/api/auth/login', { username, password });
+    const { ok, status, data } = await post('/api/auth/login', {
+      username,
+      password,
+    });
 
-    if (typeof response !== 'string') {
-      await Router.push('/');
+    if (ok) {
+      return router.push('/');
     } else {
-      setMessage(response.startsWith('401') ? 'Incorrect username/password' : response);
+      setMessage(
+        status === 401 ? (
+          <FormattedMessage
+            id="message.incorrect-username-password"
+            defaultMessage="Incorrect username/password."
+          />
+        ) : (
+          data
+        ),
+      );
     }
   };
 
@@ -51,21 +66,31 @@ export default function LoginForm() {
       >
         {() => (
           <Form>
-            <Icon icon={<Logo />} size="xlarge" className={styles.icon} />
-            <h1 className="center">umami</h1>
+            <div className={styles.header}>
+              <Icon icon={<Logo />} size="xlarge" className={styles.icon} />
+              <h1 className="center">umami</h1>
+            </div>
             <FormRow>
-              <label htmlFor="username">Username</label>
-              <Field name="username" type="text" />
-              <FormError name="username" />
+              <label htmlFor="username">
+                <FormattedMessage id="label.username" defaultMessage="Username" />
+              </label>
+              <div>
+                <Field name="username" type="text" />
+                <FormError name="username" />
+              </div>
             </FormRow>
             <FormRow>
-              <label htmlFor="password">Password</label>
-              <Field name="password" type="password" />
-              <FormError name="password" />
+              <label htmlFor="password">
+                <FormattedMessage id="label.password" defaultMessage="Password" />
+              </label>
+              <div>
+                <Field name="password" type="password" />
+                <FormError name="password" />
+              </div>
             </FormRow>
             <FormButtons>
               <Button type="submit" variant="action">
-                Login
+                <FormattedMessage id="label.login" defaultMessage="Login" />
               </Button>
             </FormButtons>
             <FormMessage>{message}</FormMessage>

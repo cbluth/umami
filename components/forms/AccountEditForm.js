@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
+import { FormattedMessage } from 'react-intl';
 import { Formik, Form, Field } from 'formik';
-import { post } from 'lib/web';
 import Button from 'components/common/Button';
 import FormLayout, {
   FormButtons,
@@ -8,6 +8,7 @@ import FormLayout, {
   FormMessage,
   FormRow,
 } from 'components/layout/FormLayout';
+import usePost from 'hooks/usePost';
 
 const initialValues = {
   username: '',
@@ -18,25 +19,28 @@ const validate = ({ user_id, username, password }) => {
   const errors = {};
 
   if (!username) {
-    errors.username = 'Required';
+    errors.username = <FormattedMessage id="label.required" defaultMessage="Required" />;
   }
   if (!user_id && !password) {
-    errors.password = 'Required';
+    errors.password = <FormattedMessage id="label.required" defaultMessage="Required" />;
   }
 
   return errors;
 };
 
 export default function AccountEditForm({ values, onSave, onClose }) {
+  const post = usePost();
   const [message, setMessage] = useState();
 
   const handleSubmit = async values => {
-    const response = await post(`/api/account`, values);
+    const { ok, data } = await post('/api/account', values);
 
-    if (typeof response !== 'string') {
+    if (ok) {
       onSave();
     } else {
-      setMessage(response || 'Something went wrong');
+      setMessage(
+        data || <FormattedMessage id="message.failure" defaultMessage="Something went wrong." />,
+      );
     }
   };
 
@@ -50,20 +54,30 @@ export default function AccountEditForm({ values, onSave, onClose }) {
         {() => (
           <Form>
             <FormRow>
-              <label htmlFor="username">Username</label>
-              <Field name="username" type="text" />
-              <FormError name="username" />
+              <label htmlFor="username">
+                <FormattedMessage id="label.username" defaultMessage="Username" />
+              </label>
+              <div>
+                <Field name="username" type="text" />
+                <FormError name="username" />
+              </div>
             </FormRow>
             <FormRow>
-              <label htmlFor="password">Password</label>
-              <Field name="password" type="password" />
-              <FormError name="password" />
+              <label htmlFor="password">
+                <FormattedMessage id="label.password" defaultMessage="Password" />
+              </label>
+              <div>
+                <Field name="password" type="password" />
+                <FormError name="password" />
+              </div>
             </FormRow>
             <FormButtons>
               <Button type="submit" variant="action">
-                Save
+                <FormattedMessage id="label.save" defaultMessage="Save" />
               </Button>
-              <Button onClick={onClose}>Cancel</Button>
+              <Button onClick={onClose}>
+                <FormattedMessage id="label.cancel" defaultMessage="Cancel" />
+              </Button>
             </FormButtons>
             <FormMessage>{message}</FormMessage>
           </Form>

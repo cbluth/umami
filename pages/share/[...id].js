@@ -1,35 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useRouter } from 'next/router';
 import Layout from 'components/layout/Layout';
-import WebsiteDetails from 'components/WebsiteDetails';
-import NotFound from 'pages/404';
-import { get } from 'lib/web';
+import WebsiteDetails from 'components/pages/WebsiteDetails';
+import useShareToken from 'hooks/useShareToken';
 
 export default function SharePage() {
-  const [websiteId, setWebsiteId] = useState();
-  const [notFound, setNotFound] = useState(false);
   const router = useRouter();
   const { id } = router.query;
+  const shareId = id?.[0];
+  const shareToken = useShareToken(shareId);
 
-  async function loadData() {
-    const website = await get(`/api/share/${id?.[0]}`);
-
-    if (website) {
-      setWebsiteId(website.website_id);
-    } else if (typeof window !== 'undefined') {
-      setNotFound(true);
-    }
+  if (!shareToken) {
+    return null;
   }
 
-  useEffect(() => {
-    if (id) {
-      loadData();
-    }
-  }, [id]);
-
-  if (!id || notFound) {
-    return <NotFound />;
-  }
+  const { websiteId } = shareToken;
 
   return (
     <Layout>

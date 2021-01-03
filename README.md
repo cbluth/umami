@@ -6,7 +6,7 @@ Umami is a simple, fast, website analytics alternative to Google Analytics.
 
 A detailed getting started guide can be found at [https://umami.is/docs/](https://umami.is/docs/)
 
-## Installation from source
+## Installing from source
 
 ### Requirements
 
@@ -60,13 +60,13 @@ The `HASH_SALT` is used to generate unique values for your installation.
 
 ### Build the application
 
-```
+```bash
 npm run build
 ```
 
 ### Start the application
 
-```
+```bash
 npm start
 ```
 
@@ -74,12 +74,32 @@ By default this will launch the application on `http://localhost:3000`. You will
 [proxy](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/) requests from your web server
 or change the [port](https://nextjs.org/docs/api-reference/cli#production) to serve the application directly.
 
-## Installation with Docker
+## Installing with Docker
 
 To build the umami container and start up a Postgres database, run:
 
-```
+```bash
 docker-compose up
+```
+
+Alternatively, to pull just the Umami Docker image with PostgreSQL support:
+```bash
+docker pull ghcr.io/mikecao/umami:postgresql-latest
+```
+
+Or with MySQL support:
+```bash
+docker pull ghcr.io/mikecao/umami:mysql-latest
+```
+
+## Getting updates
+
+To get the latest features, simply do a pull, install any new dependencies, and rebuild:
+
+```bash
+git pull
+npm install
+npm run build
 ```
 
 ## License

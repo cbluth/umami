@@ -3,7 +3,6 @@ drop table if exists pageview;
 drop table if exists session;
 drop table if exists website;
 drop table if exists account;
-drop function if exists date_trunc;
 
 create table account (
     user_id int unsigned not null auto_increment primary key,
@@ -12,7 +11,7 @@ create table account (
     is_admin bool not null default false,
     created_at timestamp default current_timestamp,
     updated_at timestamp default current_timestamp
-) ENGINE=InnoDB;
+) ENGINE=InnoDB COLLATE=utf8_general_ci;
 
 create table website (
     website_id int unsigned not null auto_increment primary key,
@@ -23,7 +22,7 @@ create table website (
     share_id varchar(64) unique,
     created_at timestamp default current_timestamp,
     foreign key (user_id) references account(user_id) on delete cascade
-) ENGINE=InnoDB;
+) ENGINE=InnoDB COLLATE=utf8_general_ci;
 
 create table session (
     session_id int unsigned not null auto_increment primary key,
@@ -38,7 +37,7 @@ create table session (
     language varchar(35),
     country char(2),
     foreign key (website_id) references website(website_id) on delete cascade
-) ENGINE=InnoDB;
+) ENGINE=InnoDB COLLATE=utf8_general_ci;
 
 create table pageview (
     view_id int unsigned not null auto_increment primary key,
@@ -49,7 +48,7 @@ create table pageview (
     referrer varchar(500),
     foreign key (website_id) references website(website_id) on delete cascade,
     foreign key (session_id) references session(session_id) on delete cascade
-) ENGINE=InnoDB;
+) ENGINE=InnoDB COLLATE=utf8_general_ci;
 
 create table event (
     event_id int unsigned not null auto_increment primary key,
@@ -61,7 +60,7 @@ create table event (
     event_value varchar(50) not null,
     foreign key (website_id) references website(website_id) on delete cascade,
     foreign key (session_id) references session(session_id) on delete cascade
-) ENGINE=InnoDB;
+) ENGINE=InnoDB COLLATE=utf8_general_ci;
 
 create index website_user_id_idx on website(user_id);
 
@@ -71,37 +70,11 @@ create index session_website_id_idx on session(website_id);
 create index pageview_created_at_idx on pageview(created_at);
 create index pageview_website_id_idx on pageview(website_id);
 create index pageview_session_id_idx on pageview(session_id);
+create index pageview_website_id_created_at_idx on pageview(website_id, created_at);
+create index pageview_website_id_session_id_created_at_idx on pageview(website_id, session_id, created_at);
 
 create index event_created_at_idx on event(created_at);
 create index event_website_id_idx on event(website_id);
 create index event_session_id_idx on event(session_id);
-
-delimiter $$
-
-create function date_trunc(
-  in_granularity enum('minute', 'hour', 'day', 'month', 'year'),
-  in_datetime datetime(6)
-)
-returns datetime(6)
-deterministic 
-begin
-  if (in_granularity = 'minute') then
-    return DATE_FORMAT(in_datetime, '%Y-%m-%d %H:%i:00.0000');
-  end if;
-  if (in_granularity = 'hour') then
-    return DATE_FORMAT(in_datetime, '%Y-%m-%d %H:00:00.0000');
-  end if;
-  if (in_granularity = 'day') then
-    return DATE_FORMAT(in_datetime, '%Y-%m-%d 00:00:00.0000');
-  end if;
-  if (in_granularity = 'month') then
-    return DATE_FORMAT(in_datetime, '%Y-%m-01 00:00:00.0000');
-  end if;
-  if (in_granularity = 'year') then
-    return DATE_FORMAT(in_datetime, '%Y-01-01 00:00:00.0000');
-  end if;
-end;
-
-$$
 
 insert into account (username, password, is_admin) values ('admin', '$2b$10$BUli0c.muyCW1ErNJc3jL.vFRFtFJWrT8/GcR4A.sUdCznaXiqFXa', true);
